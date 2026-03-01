@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CAD v15.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { font-family: Arial; background:#0f172a; color:#e5e7eb; margin:0; }
+.card { background:#111827; padding:16px; margin:10px; border-radius:10px; }
+.title { font-size:18px; margin-bottom:10px; }
+.field { margin-bottom:10px; }
+select, input { width:100%; padding:8px; border-radius:6px; border:none; }
+.btn { padding:10px; border:none; border-radius:6px; cursor:pointer; }
+.primary { background:#2563eb; color:white; }
+</style>
+</head>
+
+<body>
+
+<div id="app"></div>
+
+<script>
+const LS = {
+  data: "cad_data"
+};
+
+let data = JSON.parse(localStorage.getItem(LS.data)) || {
+  units: []
+};
+
+let session = { username: "ADMIN" };
+
+function save(){
+  localStorage.setItem(LS.data, JSON.stringify(data));
+}
+
+function viewUnits(){
+return `
+<div class="card">
+<div class="title">Units</div>
+
+<div class="field">
+<label>Unit Name</label>
+<select id="uName">
+<option value="">Select unit…</option>
+
+<option>S1/Gunship</option>
+<option>S1/Medship</option>
+<option>S1/CAP-1</option>
+<option>S1/CAP-2</option>
+<option>S1/CAP-3</option>
+<option>S1/CAP-4</option>
+
+<option>S2/Gunship</option>
+<option>S2/Medship</option>
+<option>S2/CAP-1</option>
+<option>S2/CAP-2</option>
+<option>S2/CAP-3</option>
+<option>S2/CAP-4</option>
+
+<option>S3/Gunship</option>
+<option>S3/Medship</option>
+<option>S3/CAP-1</option>
+<option>S3/CAP-2</option>
+<option>S3/CAP-3</option>
+<option>S3/CAP-4</option>
+
+</select>
+</div>
+
+<div class="field">
+<label>Type</label>
+<select id="uType">
+<option>MEDICAL</option>
+<option>CAP</option>
+<option>Gunship</option>
+</select>
+</div>
+
+<div class="field">
+<label>Status</label>
+<select id="uStatus">
+<option>AVAILABLE</option>
+<option>ASSIGNED</option>
+<option>EN_ROUTE</option>
+<option>ON_SCENE</option>
+<option>OUT_OF_SERVICE</option>
+</select>
+</div>
+
+<div class="field">
+<label>Notes</label>
+<input id="uNotes">
+</div>
+
+<button class="btn primary" id="btnAddUnit">Add Unit</button>
+
+</div>
+
+<div class="card">
+<div class="title">Active Units</div>
+<div id="unitList"></div>
+</div>
+`;
+}
+
+function renderUnits(){
+document.getElementById("app").innerHTML = viewUnits();
+
+document.getElementById("btnAddUnit").onclick = () => {
+  const name = document.getElementById("uName").value;
+  if(!name) return alert("Select a unit");
+
+  const unit = {
+    name,
+    type: document.getElementById("uType").value,
+    status: document.getElementById("uStatus").value,
+    notes: document.getElementById("uNotes").value
+  };
+
+  data.units.push(unit);
+  save();
+  renderUnits();
+};
+
+const list = data.units.map(u => `
+<div class="card">
+<strong>${u.name}</strong><br>
+Type: ${u.type}<br>
+Status: ${u.status}<br>
+Notes: ${u.notes}<br>
+by ADMIN
+</div>
+`).join("");
+
+document.getElementById("unitList").innerHTML = list;
+}
+
+renderUnits();
+</script>
+
+</body>
+</html>
