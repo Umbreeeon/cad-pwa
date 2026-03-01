@@ -1,0 +1,2134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stanton CAD (Star Citizen)</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --text:#e7eefb;
+      --muted:#93a4c7;
+      --line:#223148;
+      --accent:#ff4d6d;
+      --good:#4ade80;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --shadow: 0 12px 24px rgba(0,0,0,.35);
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 800px at 20% -20%, rgba(255,77,109,.18), transparent 60%),
+                  radial-gradient(900px 700px at 100% 0%, rgba(74,222,128,.10), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      font-family:var(--sans);
+    }
+    .wrap{max-width:1180px;margin:0 auto;padding:22px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px 16px;border:1px solid var(--line);background:rgba(15,23,34,.72);
+      border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter: blur(8px);
+      position:sticky;top:12px;z-index:10;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:40px;height:40px;border-radius:12px;
+      background: linear-gradient(135deg, rgba(255,77,109,.70), rgba(99,179,255,.18));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 10px 20px rgba(0,0,0,.25);
+    }
+    .brand h1{font-size:16px;margin:0;line-height:1.1}
+    .brand .sub{font-size:12px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+    .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      background:rgba(23,35,53,.9);border:1px solid var(--line);color:var(--muted);
+      font-size:12px;
+    }
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18,29,43,.95), rgba(15,23,34,.95));
+      color:var(--text);
+      padding:9px 12px;border-radius:12px;
+      font-weight:600;font-size:13px;
+      box-shadow: 0 10px 16px rgba(0,0,0,.18);
+    }
+    .btn:hover{border-color:rgba(255,77,109,.35)}
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(255,77,109,.22), rgba(18,29,43,.95));
+      border-color:rgba(255,77,109,.42);
+    }
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(251,113,133,.18), rgba(18,29,43,.95));
+      border-color:rgba(251,113,133,.35);
+    }
+
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:16px;
+      align-items:start;
+    }
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+
+    .panel{
+      border:1px solid var(--line);
+      background:rgba(15,23,34,.72);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .panel .hd{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:12px 14px;border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18,29,43,.75), rgba(15,23,34,.35));
+    }
+    .panel .hd h2{margin:0;font-size:13px;letter-spacing:.3px;color:var(--muted);text-transform:uppercase}
+    .panel .bd{padding:12px 14px}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--line);background:rgba(23,35,53,.7);
+      color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;
+    }
+    .tab.active{
+      color:var(--text);
+      border-color:rgba(255,77,109,.45);
+      box-shadow: 0 0 0 3px rgba(255,77,109,.12) inset;
+    }
+
+    .card{
+      border:1px solid var(--line);
+      background:rgba(18,29,43,.50);
+      border-radius:var(--radius);
+      padding:12px;
+      transition: border-color .15s ease;
+    }
+    .card:hover{border-color: rgba(255,77,109,.35)}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;flex:1;min-width: 140px}
+    label{font-size:12px;color:var(--muted)}
+    input, select, textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(10,14,20,.65);
+      color:var(--text);
+      outline:none;
+      font-size:13px;
+    }
+    textarea{min-height:92px;resize:vertical}
+    input:focus, select:focus, textarea:focus{
+      border-color:rgba(255,77,109,.55);
+      box-shadow:0 0 0 3px rgba(255,77,109,.12)
+    }
+    .help{font-size:12px;color:var(--muted);line-height:1.4}
+    .hr{height:1px;background:var(--line);margin:10px 0}
+
+    .rightCol{display:flex;flex-direction:column;gap:16px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .search{flex:1;min-width: 220px}
+    .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+    .k{padding:10px;border-radius:14px;border:1px solid var(--line);background:rgba(18,29,43,.55)}
+    .k .n{font-size:18px;font-weight:800}
+    .k .t{font-size:12px;color:var(--muted);margin-top:2px}
+
+    .badge{
+      font-size:11px;font-weight:800;
+      padding:4px 8px;border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(23,35,53,.75);
+      color:var(--muted);
+      font-family:var(--mono);
+      display:inline-block;
+    }
+    .badge.good{border-color:rgba(74,222,128,.35);color:rgba(74,222,128,.95)}
+    .badge.warn{border-color:rgba(251,191,36,.35);color:rgba(251,191,36,.95)}
+    .badge.bad{border-color:rgba(251,113,133,.35);color:rgba(251,113,133,.95)}
+
+    .title .main{font-weight:900;font-size:13px}
+    .title .sub{font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px}
+    .mini{font-size:12px;line-height:1.45}
+    .muted{color:var(--muted)}
+    .mono{font-family:var(--mono)}
+    .list{display:flex;flex-direction:column;gap:10px}
+
+    .pill{
+      padding:4px 8px;border-radius:999px;border:1px solid var(--line);
+      background:rgba(23,35,53,.7);color:var(--muted);font-size:11px;font-weight:800;font-family:var(--mono);
+      display:inline-block;margin:3px 4px 0 0;
+    }
+
+    .toast{
+      position:fixed;right:14px;bottom:14px;
+      padding:10px 12px;border-radius:14px;border:1px solid var(--line);
+      background:rgba(15,23,34,.85);box-shadow:var(--shadow);
+      color:var(--text);font-size:13px;display:none;max-width: 360px;
+      z-index:100;
+    }
+
+    .dialogBackdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;padding:18px;z-index:200;
+    }
+    .dialog{
+      max-width:980px;width:100%;
+      border:1px solid var(--line);
+      background:rgba(15,23,34,.92);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      max-height: 88vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .dialog .hd{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .dialog .hd h3{margin:0;font-size:14px}
+    .dialog .bd{padding:12px 14px;overflow:auto}
+    .dialog .ft{padding:12px 14px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 760px){ .split{grid-template-columns:1fr} }
+
+    .errorBanner{
+      display:none;
+      margin:14px 0 0;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(251,113,133,.45);
+      background: rgba(251,113,133,.10);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .reportBox{
+      width:100%;
+      min-height:260px;
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+    .smallNote{font-size:11px;color:var(--muted);margin-top:6px}
+
+    .injWrap{
+      display:grid;
+      grid-template-columns: 210px 1fr;
+      gap:12px;
+      align-items:start;
+    }
+    @media (max-width: 840px){ .injWrap{grid-template-columns:1fr} }
+
+    .outline{
+      border:1px solid var(--line);
+      background:rgba(10,14,20,.45);
+      border-radius:16px;
+      padding:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 240px;
+      user-select:none;
+    }
+    .sil{
+      width:170px;
+      height:220px;
+      display:block;
+    }
+    .injGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 840px){ .injGrid{grid-template-columns:1fr} }
+    .injField label{display:block}
+
+    .hidden{display:none !important;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Stanton CAD</h1>
+        <div class="sub">MEDRUNNER-STYLE DISPATCH â¢ STAR CITIZEN</div>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="chip" id="sessionChip">ADMIN</span>
+    </div>
+  </div>
+
+  <div class="errorBanner" id="errorBanner"></div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="hd">
+        <h2>Console</h2>
+        <div class="tabs" id="tabs"></div>
+      </div>
+      <div class="bd" id="leftContent"></div>
+    </div>
+
+    <div class="rightCol">
+      <div class="panel">
+        <div class="hd">
+          <h2>Live Board</h2>
+          <div class="toolbar">
+            <input class="search" id="search" placeholder="Search calls, units, people..." />
+            <select id="boardMode" style="max-width:220px">
+              <option value="calls">Calls</option>
+              <option value="units">Units</option>
+              <option value="people">People</option>
+              <option value="log">Log</option>
+            </select>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="kpi">
+            <div class="k"><div class="n" id="kOpen">0</div><div class="t">Open Calls</div></div>
+            <div class="k"><div class="n" id="kDispatched">0</div><div class="t">Dispatched</div></div>
+            <div class="k"><div class="n" id="kUnitsAvail">0</div><div class="t">Units Available</div></div>
+          </div>
+          <div class="hr"></div>
+          <div id="board"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="hd">
+          <h2>Audit Log</h2>
+          <span class="badge" id="logHint">Last 30 actions</span>
+        </div>
+        <div class="bd">
+          <div class="list" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="dialogBackdrop" id="dlgBackdrop">
+  <div class="dialog">
+    <div class="hd">
+      <h3 id="dlgTitle">Dialog</h3>
+      <button class="btn" id="btnCloseDlg">Close</button>
+    </div>
+    <div class="bd" id="dlgBody"></div>
+    <div class="ft" id="dlgFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = (id) => document.getElementById(id);
+
+  window.addEventListener("error", (e) => {
+    try{
+      const b = $("errorBanner");
+      const msg = (e?.message || e?.error?.message || "unknown error");
+      const stack = (e?.error?.stack || "");
+      if(b){
+        b.style.display = "block";
+        b.innerHTML = "CAD script error: <b>" + esc(msg) + "</b><br><span class=\"muted\">" +
+          (stack ? esc(stack).slice(0, 900) : "Open DevTools Console for details.") +
+          "</span>";
+      }
+      console.error("CAD script error:", e?.error || e);
+    } catch(err){
+      console.error("Error handler failed:", err, e);
+    }
+  });const UI = {
+    sessionChip: $("sessionChip"),
+    btnOpenLogin: $("btnOpenLogin"),
+    btnLogout: $("btnLogout"),
+    tabs: $("tabs"),
+    leftContent: $("leftContent"),
+    search: $("search"),
+    boardMode: $("boardMode"),
+    board: $("board"),
+    kOpen: $("kOpen"),
+    kDispatched: $("kDispatched"),
+    kUnitsAvail: $("kUnitsAvail"),
+    log: $("log"),
+    dlgBackdrop: $("dlgBackdrop"),
+    dlgTitle: $("dlgTitle"),
+    dlgBody: $("dlgBody"),
+    dlgFoot: $("dlgFoot"),
+    btnCloseDlg: $("btnCloseDlg"),
+    toast: $("toast"),
+  };
+
+  const LS = { accounts: "sc_cad_accounts_v7", session: "sc_cad_session_v7" };
+  const userKey = (u) => `sc_cad_user_${u}_v7`;
+
+  const TABS = [
+    { id:"newCall", label:"New Call" },
+    { id:"dispatch", label:"Dispatch" },
+    { id:"units", label:"Units" },
+    { id:"people", label:"People" },
+    { id:"settings", label:"Settings" },
+  ];
+
+  // â FORCE systems list (Nyx always appears in console + extraction)
+  const SYSTEMS = ["Stanton", "Pyro", "Nyx"];
+
+  // Locations
+  const SC_LOCATIONS = {
+    "Stanton": {
+      "Landing Zones": ["Area18 (ArcCorp)","Lorville (Hurston)","Orison (Crusader)","New Babbage (microTech)"],
+      "Planets & Moons": [
+        "Hurston","Hurston â Arial","Hurston â Aberdeen","Hurston â Magda","Hurston â Ita",
+        "Crusader","Crusader â Cellin","Crusader â Daymar","Crusader â Yela",
+        "ArcCorp","ArcCorp â Lyria","ArcCorp â Wala",
+        "microTech","microTech â Calliope","microTech â Clio","microTech â Euterpe"
+      ],
+      "Orbital Stations": [
+        "Everus Harbor (Hurston)","Seraphim Station (Crusader)","Baijini Point (ArcCorp)",
+        "Port Tressler (microTech)","Grim HEX (Yela)","Security Post Kareah"
+      ],
+      "Lagrange Stations (L1âL5)": [
+        "ARC-L1 Wide Forest Station","ARC-L2 Lively Pathway Station","ARC-L3 Modern Express Station",
+        "ARC-L4 Faint Glen Station","ARC-L5 Yellow Core Station",
+        "CRU-L1 Ambitious Dream Station","CRU-L2 (R&R CRU-L2)","CRU-L3 Sparkling Way Station",
+        "CRU-L4 Shallow Fields Station","CRU-L5 Beautiful Glen Station",
+        "HUR-L1 Green Glade Station","HUR-L2 Faithful Dream Station","HUR-L3 Thundering Express Station",
+        "HUR-L4 Melodic Fields Station","HUR-L5 High Course Station",
+        "MIC-L1 Shallow Frontier Station","MIC-L2 Long Forest Station","MIC-L3 Endless Odyssey Station",
+        "MIC-L4 Red Crossroads Station","MIC-L5 Modern Icarus Station"
+      ]
+    },
+    "Pyro": {
+      "Planets": ["Pyro I","Monox (Pyro II)","Bloom (Pyro III)","Pyro IV","Pyro V","Terminus (Pyro VI)"],
+      "Stations": ["Ruin Station (Terminus / Pyro VI)","Checkmate Station (Monox / Pyro II L4)","Orbituary"],
+      "Contested Zones": ["Ruin Station Contested Zone","Checkmate Contested Zone","Orbituary Contested Zone"]
+    },
+    // â Nyx included
+    "Nyx": {
+      "Landing Zones": ["Levski (Delamar)"],
+      "Stations": ["Levski (Delamar)"]
+    }
+  };
+
+  function getStationsForSystem(system){
+    const sys = String(system || "").trim();
+    if(sys === "Nyx"){
+      const st = SC_LOCATIONS.Nyx?.Stations || [];
+      const lz = SC_LOCATIONS.Nyx?.["Landing Zones"] || [];
+      return [...st, ...lz];
+    }
+    if(sys === "Pyro"){
+      const st = SC_LOCATIONS.Pyro?.Stations || [];
+      return st.slice();
+    }
+    const orbital = SC_LOCATIONS.Stanton?.["Orbital Stations"] || [];
+    const lagrange = SC_LOCATIONS.Stanton?.["Lagrange Stations (L1âL5)"] || [];
+    const lz = SC_LOCATIONS.Stanton?.["Landing Zones"] || [];
+    return [...orbital, ...lagrange, ...lz];
+  }
+
+  const INJURY_PARTS = [
+    { key:"head", label:"Head" },
+    { key:"chest", label:"Chest" },
+    { key:"leftArm", label:"Left Arm" },
+    { key:"rightArm", label:"Right Arm" },
+    { key:"leftLeg", label:"Left Leg" },
+    { key:"rightLeg", label:"Right Leg" },
+  ];
+  const INJURY_LEVELS = ["NONE","TIER_1","TIER_2","TIER_3"];
+  const INJURY_LABEL = { "NONE":"None","TIER_1":"Tier 1","TIER_2":"Tier 2","TIER_3":"Tier 3" };
+
+  let activeTab = "newCall";
+  let accounts = loadJSON(LS.accounts, {});
+  let session = { username: "ADMIN" };
+  // Static ADMIN mode: always have data
+  let data = loadJSON(LS.data, null) || freshUserData();
+  syncSession();
+  bindGlobal();
+  renderTabs();
+  renderAll();
+
+  function syncSession(){
+    // Static ADMIN mode: no login/accounts gating
+    session = { username: "ADMIN" };
+    data = loadJSON(LS.data, null) || freshUserData();
+    normalizeData();
+    renderTopbar();
+  }
+function normalizeData(){
+    if(!data) data = freshUserData();
+data.calls ??= [];
+    data.units ??= [];
+    data.people ??= [];
+    data.log ??= [];
+    data.nextId ??= 1000;
+
+    for(const c of data.calls){
+      c.details ??= "";
+      c.system ??= "Stanton";
+      c.status ??= "OPEN";
+      c.assignedUnitIds ??= [];
+      c.linkedPeopleIds ??= [];
+      c.updates ??= [];
+
+      c.aar ??= {};
+      c.aar.commandSummary ??= "";
+      c.aar.aoNotes ??= "";
+      c.aar.threatsPveCount ??= "0";
+      c.aar.threatsPveNotes ??= "";
+      c.aar.threatsPvpCount ??= "0";
+      c.aar.threatsPvpNotes ??= "";
+      c.aar.actionsTaken ??= "";
+      c.aar.medicalDevice ??= "";
+      c.aar.extractionSystem ??= (c.system || "Stanton");
+      c.aar.extractionStation ??= "";
+      c.aar.extractionCustom ??= "";
+      c.aar.outcome ??= "";
+      c.aar.rtbDebrief ??= "";
+
+      c.aar.medInjuries ??= {};
+      for(const part of INJURY_PARTS){
+        const v = c.aar.medInjuries[part.key];
+        c.aar.medInjuries[part.key] = INJURY_LEVELS.includes(v) ? v : "NONE";
+      }
+    }
+    for(const p of data.people){
+      p.org ??= "";
+      p.tags ??= "";
+      p.notes ??= [];
+    }
+    for(const u of data.units){
+      u.notes ??= "";
+      u.status ??= "AVAILABLE";
+      u.type ??= "MEDICAL";
+      u.ship ??= "";
+    }
+  }
+
+  function freshUserData(){
+    return { calls: [], units: [], people: [], log: [], nextId: 1000 };
+  }
+
+  function persist(){
+    if(!session?.username) return;
+    saveJSON(userKey(session.username), data);
+    saveJSON(LS.accounts, accounts);
+    saveJSON(LS.session, session);
+  }
+
+  function renderTopbar(){
+    const loggedIn = !!session?.username;
+    UI.sessionChip.textContent = loggedIn ? `Signed in: ${session.username}` : "ADMIN";
+    if(UI.btnOpenLogin) UI.btnOpenLogin.style.display = loggedIn ? "none" : "";
+    if(UI.btnLogout) UI.btnLogout.style.display = loggedIn ? "" : "none";
+  }
+
+  function renderTabs(){
+    UI.tabs.innerHTML = "";
+    TABS.forEach(t => {
+      const b = document.createElement("button");
+      b.className = "tab" + (t.id === activeTab ? " active" : "");
+      b.textContent = t.label;
+      b.addEventListener("click", () => { activeTab = t.id; renderTabs(); renderLeft(); });
+      UI.tabs.appendChild(b);
+    });
+  }
+
+  function renderAll(){ renderLeft(); renderBoard(); renderKPIs(); renderAuditLog(); }
+
+  function renderLeft(){
+    // Static ADMIN mode: login gate disabled
+    if(false){
+      UI.leftContent.innerHTML = `
+        <div class="card">
+          <div class="title">
+            <div class="main">Login required</div>
+            <div class="sub">This CAD stores data locally in your browser.</div>
+          </div>
+          <div class="hr"></div>
+          <div class="help">Click Login in the top right.</div>
+          <div style="margin-top:10px">
+            <button class="btn primary" id="btnInlineLogin">Open Login</button>
+          </div>
+        </div>`;
+      return;
+    }
+
+    if(activeTab === "newCall") UI.leftContent.innerHTML = viewNewCall();
+    if(activeTab === "dispatch") UI.leftContent.innerHTML = viewDispatch();
+    if(activeTab === "units") UI.leftContent.innerHTML = viewUnits();
+    if(activeTab === "people") UI.leftContent.innerHTML = viewPeople();
+    if(activeTab === "settings") UI.leftContent.innerHTML = viewSettings();
+    bindLeft();
+  }
+
+  function renderBoard(){
+    if(!session?.username){ UI.board.innerHTML = `<div class="help">Sign in to see the live board.</div>`; return; }
+    const q = (UI.search.value || "").trim().toLowerCase();
+    const mode = UI.boardMode.value;
+
+    if(mode === "calls"){
+      const calls = [...data.calls].sort((a,b)=> b.createdAt - a.createdAt).filter(c => callBlob(c).includes(q));
+      UI.board.innerHTML = calls.length ? calls.map(callCard).join("") : `<div class="help">No calls yet.</div>`;
+      calls.forEach(c => { const el = $("openCall_"+c.id); if(el) el.addEventListener("click", () => openCallDetails(c.id)); });
+    }
+    if(mode === "units"){
+      const units = [...data.units].sort((a,b)=> a.name.localeCompare(b.name))
+        .filter(u => (u.name+" "+u.type+" "+u.status+" "+(u.notes||"")).toLowerCase().includes(q));
+      UI.board.innerHTML = units.length ? units.map(unitCard).join("") : `<div class="help">No units yet.</div>`;
+    }
+    if(mode === "people"){
+      const ppl = [...data.people].sort((a,b)=> a.handle.localeCompare(b.handle))
+        .filter(p => (p.handle+" "+(p.org||"")+" "+(p.tags||"")+" "+notesText(p)).toLowerCase().includes(q));
+      UI.board.innerHTML = ppl.length ? ppl.map(personCard).join("") : `<div class="help">No people yet.</div>`;
+    }
+    if(mode === "log"){ renderAuditLog(true); UI.board.innerHTML = UI.log.innerHTML; }
+  }
+
+  function renderKPIs(){
+    if(!session?.username){ UI.kOpen.textContent="0"; UI.kDispatched.textContent="0"; UI.kUnitsAvail.textContent="0"; return; }
+    UI.kOpen.textContent = String(data.calls.filter(c => c.status === "OPEN").length);
+    UI.kDispatched.textContent = String(data.calls.filter(c => ["DISPATCHED","EN_ROUTE","ON_SCENE","RTB"].includes(c.status)).length);
+    UI.kUnitsAvail.textContent = String(data.units.filter(u => u.status === "AVAILABLE").length);
+  }
+
+  function renderAuditLog(skipBoard){
+    if(!session?.username){ UI.log.innerHTML = `<div class="help">No log available.</div>`; return; }
+    const items = [...data.log].sort((a,b)=> b.at - a.at).slice(0,30);
+    UI.log.innerHTML = items.length ? items.map(l => `
+      <div class="card">
+        <div class="mini"><span class="mono">${fmtTime(l.at)}</span> â <b>${esc(l.by)}</b></div>
+        <div class="mini muted" style="margin-top:6px">${esc(l.action)}</div>
+      </div>`).join("") : `<div class="help">No actions yet.</div>`;
+    if(!skipBoard && UI.boardMode.value === "log") UI.board.innerHTML = UI.log.innerHTML;
+  }
+
+  // Views
+  function viewNewCall(){
+    return `
+      <div class="card">
+        <div class="title"><div class="main">Create Call</div><div class="sub">Medrunner-style quick intake</div></div>
+        <div class="hr"></div>
+        <div class="row">
+          <div class="field">
+            <label>Call Type</label>
+            <select id="callType">
+              <option>Distress Beacon</option>
+              <option>Medical Emergency</option>
+              <option>Armed Contact / Hostiles</option>
+              <option>Piracy / Nine Tails Activity</option>
+              <option>Search & Rescue</option>
+              <option>Escort Request</option>
+              <option>Station / Port Incident</option>
+              <option>Ground Bunker Incident</option>
+              <option>Custom...</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Priority</label>
+            <select id="callPriority">
+              <option value="LOW">LOW</option>
+              <option value="MED" selected>MED</option>
+              <option value="HIGH">HIGH</option>
+              <option value="CRITICAL">CRITICAL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field"><label>System</label><select id="sysSelect"></select></div>
+          <div class="field"><label>Location</label><select id="locSelect"></select></div>
+        </div>
+
+        <div class="field">
+          <label>Custom Location (optional)</label>
+          <input id="callLocationCustom" placeholder="Type if not listed (e.g. outpost/cave/wreck)" />
+        </div>
+
+        <div class="field">
+          <label>Details</label>
+          <textarea id="callDetails" placeholder="Threats, injuries, ship type, last known, comms status..."></textarea>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="btnCreateCall">Create Call</button>
+          <button class="btn" id="btnSample">Add Sample Data</button>
+        </div>
+      </div>`;
+  }
+
+  function viewDispatch(){
+    const callOpts = data.calls.filter(c => c.status !== "CLOSED")
+      .sort((a,b)=>b.createdAt-a.createdAt)
+      .map(c => `<option value="${c.id}">${esc(c.id)} â¢ ${esc(c.priority)} â¢ ${esc(c.status)} â¢ ${esc(c.location)}</option>`).join("");
+
+    const unitOpts = data.units
+      .sort((a,b)=>a.name.localeCompare(b.name))
+      .map(u => `<option value="${u.id}">${esc(u.name)} â¢ ${esc(u.type)}${u.ship ? " (" + esc(u.ship) + ")" : ""} â¢ ${esc(u.status)}</option>`).join("");
+
+    return `
+      <div class="card">
+        <div class="title"><div class="main">Dispatch</div><div class="sub">Assign units + update call status</div></div>
+        <div class="hr"></div>
+        <div class="field"><label>Call</label><select id="dCall">${callOpts || `<option disabled>(No calls)</option>`}</select></div>
+        <div class="field"><label>Unit</label><select id="dUnit">${unitOpts || `<option disabled>(No units)</option>`}</select></div>
+        <div class="row">
+          <button class="btn primary" id="btnAssign">Assign</button>
+          <button class="btn" id="btnUnassign">Unassign</button>
+        </div>
+        <div class="hr"></div>
+        <div class="field"><label>Set Call Status</label>
+          <select id="dStatus"><option>OPEN</option><option>DISPATCHED</option><option>EN_ROUTE</option><option>ON_SCENE</option><option>RTB</option><option>CLOSED</option></select>
+        </div>
+        <div class="row"><button class="btn" id="btnSetStatus">Apply Status</button></div>
+        <div class="hr"></div>
+        <div class="help">Tip: Click any call on the right board to open full call details.</div>
+      </div>`;
+  }
+
+  function viewUnits(){
+    return `
+      <div class="card">
+        <div class="title"><div class="main">Units</div><div class="sub">Create dispatchable units</div></div>
+        <div class="hr"></div>
+        <div class="field"><label>Unit Name</label>
+            <select id="uName">
+              <option value="">Select unitâ¦</option>
+
+              <option>S1/Gunship</option>
+              <option>S1/Medship</option>
+              <option>S1/CAP-1</option>
+              <option>S1/CAP-2</option>
+              <option>S1/CAP-3</option>
+              <option>S1/CAP-4</option>
+
+              <option>S2/Gunship</option>
+              <option>S2/Medship</option>
+              <option>S2/CAP-1</option>
+              <option>S2/CAP-2</option>
+              <option>S2/CAP-3</option>
+              <option>S2/CAP-4</option>
+
+              <option>S3/Gunship</option>
+              <option>S3/Medship</option>
+              <option>S3/CAP-1</option>
+              <option>S3/CAP-2</option>
+              <option>S3/CAP-3</option>
+              <option>S3/CAP-4</option>
+            </select>
+          </div>
+
+        <div class="field">
+          <label>Ship (Star Citizen)</label>
+          <input id="uShip" list="scShipList" placeholder="Search ship (e.g., Cutlass Red, Carrack)" />
+          <datalist id="scShipList"></datalist>
+          <div class="smallNote" id="shipHint">Pick a ship to see category, suggested unit type, and crew/role hints.</div>
+        </div>
+
+        <div class="row">
+          <div class="field"><label>Unit Type</label>
+            <select id="uType">
+              <option>MEDICAL</option>
+              <option>CAP</option>
+              <option>Gunship</option>
+            </select>
+          </div>
+          <div class="field"><label>Status</label>
+            <select id="uStatus"><option>AVAILABLE</option><option>ASSIGNED</option><option>EN_ROUTE</option><option>ON_SCENE</option><option>OUT_OF_SERVICE</option></select>
+          </div>
+        </div>
+
+        <div class="field"><label>Notes</label><input id="uNotes" placeholder="Ship type / crew / loadout" /></div>
+        <div class="row"><button class="btn primary" id="btnAddUnit">Add Unit</button></div>
+      </div>`;
+  }
+
+  function viewPeople(){
+    const opts = data.people.sort((a,b)=>a.handle.localeCompare(b.handle))
+      .map(p => `<option value="${p.id}">${esc(p.handle)} â¢ ${esc(p.tags||"")}</option>`).join("");
+
+    return `
+      <div class="card">
+        <div class="title"><div class="main">People</div><div class="sub">Profiles + notes</div></div>
+        <div class="hr"></div>
+        <div class="field"><label>Handle / Name</label><input id="pHandle" placeholder="Umbreeeon / Unknown Suspect / Witness..." /></div>
+        <div class="field"><label>Org / Affiliation</label><input id="pOrg" placeholder="CSEC / Nine Tails / Civilian..." /></div>
+        <div class="field"><label>Tags</label><input id="pTags" placeholder="victim, suspect, witness..." /></div>
+        <div class="row"><button class="btn primary" id="btnAddPerson">Add Person</button></div>
+
+        <div class="hr"></div>
+
+        <div class="field"><label>Add Note To Person</label><select id="pSel">${opts || `<option disabled>(No people)</option>`}</select></div>
+        <div class="field"><textarea id="pNote" placeholder="Add narrative note..."></textarea></div>
+        <div class="row"><button class="btn" id="btnAddNote">Add Note</button></div>
+      </div>`;
+  }
+
+  function viewSettings(){
+    return `
+      <div class="card">
+        <div class="title"><div class="main">Settings</div><div class="sub">Export / import your data</div></div>
+        <div class="hr"></div>
+        <div class="row">
+          <button class="btn" id="btnExport">Export JSON</button>
+          <button class="btn" id="btnImport">Import JSON</button>
+          <button class="btn danger" id="btnWipe">Wipe My Data</button>
+        </div>
+      </div>`;
+  }
+
+  function bindLeft(){
+    if(activeTab === "newCall"){
+      buildLocationDropdowns();
+
+      $("btnCreateCall").addEventListener("click", () => {
+        const type = $("callType").value;
+        const priority = $("callPriority").value;
+        const sysPick = $("sysSelect").value;
+        const locPick = $("locSelect").value;
+
+        const locCustom = $("callLocationCustom").value.trim();
+        const location = (locCustom || locPick || "").trim();
+        const details = $("callDetails").value.trim();
+        if(!location){ toast("Location is required."); return; }
+
+        const call = {
+          id: newId("C"),
+          createdAt: Date.now(),
+          createdBy: "ADMIN",
+          status: "OPEN",
+          system: sysPick || "Stanton",
+          type: type === "Custom..." ? "Custom" : type,
+          priority,
+          location,
+          details,
+          assignedUnitIds: [],
+          linkedPeopleIds: [],
+          updates: [{ at: Date.now(), by: "SYSTEM", text: "Call created." }],
+          aar: {
+            commandSummary: "",
+            aoNotes: "",
+            threatsPveCount: "0",
+            threatsPveNotes: "",
+            threatsPvpCount: "0",
+            threatsPvpNotes: "",
+            actionsTaken: "",
+            medicalDevice: "",
+            medInjuries: { head:"NONE", chest:"NONE", leftArm:"NONE", rightArm:"NONE", leftLeg:"NONE", rightLeg:"NONE" },
+            extractionSystem: (sysPick || "Stanton"),
+            extractionStation: "",
+            extractionCustom: "",
+            outcome: "",
+            rtbDebrief: ""
+          }
+        };
+
+        data.calls.push(call);
+        addLog(`Created call ${call.id} (${call.type}) @ ${call.location}`);
+        persist();
+        toast("Call created.");
+        $("callLocationCustom").value = "";
+        $("callDetails").value = "";
+        renderAll();
+      });
+
+      $("btnSample").addEventListener("click", () => { seedSample(); persist(); toast("Sample data added."); renderAll(); });
+    }
+
+    if(activeTab === "dispatch"){
+      $("btnAssign")?.addEventListener("click", () => {
+        const call = getCall($("dCall")?.value);
+        const unit = getUnit($("dUnit")?.value);
+        if(!call || !unit){ toast("Need a call and a unit."); return; }
+        assignUnitToCall(call.id, unit.id);
+        toast("Assigned.");
+        renderAll();
+      });
+
+      $("btnUnassign")?.addEventListener("click", () => {
+        const call = getCall($("dCall")?.value);
+        const unit = getUnit($("dUnit")?.value);
+        if(!call || !unit){ toast("Select call and unit."); return; }
+        unassignUnitFromCall(call.id, unit.id);
+        toast("Unassigned.");
+        renderAll();
+      });
+
+      $("btnSetStatus")?.addEventListener("click", () => {
+        const call = getCall($("dCall")?.value);
+        if(!call){ toast("Select call."); return; }
+        setCallStatus(call.id, $("dStatus").value);
+        toast("Status updated.");
+        renderAll();
+      });
+    }
+
+    if(activeTab === "units"){
+      // Ship list + Ship â Unit Type autoset
+      loadStarCitizenShips();
+      const shipEl = document.getElementById("uShip");
+      if(shipEl){
+        shipEl.addEventListener("input", applyShipAutoset);
+        shipEl.addEventListener("change", applyShipAutoset);
+      }
+      applyShipAutoset();
+
+      $("btnAddUnit")?.addEventListener("click", () => {
+        const name = $("uName").value.trim();
+        if(!name){ toast("Unit name required."); return; }
+        const unit = { id: newId("U"), name, type: $("uType").value, ship: $("uShip").value.trim(), status: $("uStatus").value, notes: $("uNotes").value.trim() };
+        data.units.push(unit);
+        addLog(`Added unit ${unit.name} (${unit.type})`);
+        persist();
+        renderAll();
+        toast("Unit added.");
+        $("uName").value = ""; $("uShip").value = ""; $("uNotes").value = "";
+      });
+    
+    }
+
+    if(activeTab === "people"){
+      $("btnAddPerson")?.addEventListener("click", () => {
+        const handle = $("pHandle").value.trim();
+        if(!handle){ toast("Handle/name required."); return; }
+        const p = { id: newId("P"), handle, org: $("pOrg").value.trim(), tags: $("pTags").value.trim(), notes: [] };
+        data.people.push(p);
+        addLog(`Added person profile: ${p.handle}`);
+        persist();
+        renderAll();
+        toast("Person added.");
+        $("pHandle").value = ""; $("pOrg").value = ""; $("pTags").value = "";
+      });
+
+      $("btnAddNote")?.addEventListener("click", () => {
+        const p = getPerson($("pSel")?.value);
+        const text = $("pNote").value.trim();
+        if(!p){ toast("Select a person."); return; }
+        if(!text){ toast("Enter a note."); return; }
+        p.notes.unshift({ at: Date.now(), by: session.username, text });
+        addLog(`Added note to ${p.handle}`);
+        persist();
+        renderAll();
+        toast("Note added.");
+        $("pNote").value = "";
+      });
+    }
+
+    if(activeTab === "settings"){
+      $("btnExport")?.addEventListener("click", () => download(`stanton-cad_${session.username}.json`, JSON.stringify(data,null,2), "application/json"));
+      $("btnImport")?.addEventListener("click", importJSON);
+      $("btnWipe")?.addEventListener("click", () => {
+        if(!confirm("Wipe all your data?")) return;
+        data = freshUserData(); normalizeData();
+        addLog("Wiped user data"); persist(); renderAll(); toast("Wiped.");
+      });
+    }
+  }
+
+  function bindGlobal(){
+    UI.btnCloseDlg.addEventListener("click", closeDialog);
+    UI.dlgBackdrop.addEventListener("click", (e) => { if(e.target === UI.dlgBackdrop) closeDialog(); });
+
+    UI.search.addEventListener("input", renderBoard);
+    UI.boardMode.addEventListener("change", renderBoard);
+  }
+
+  // Login removed: static ADMIN mode
+
+  function closeDialog(){
+    UI.dlgBackdrop.style.display = "none";
+    UI.dlgTitle.textContent = "Dialog";
+    UI.dlgBody.innerHTML = "";
+    UI.dlgFoot.innerHTML = "";
+  }
+
+
+  // Login removed (static ADMIN). Keep a stub to prevent runtime errors.
+  function openLoginDialog(){
+    // no-op
+    toast("Admin mode: login disabled.");
+  }
+
+  // â Call Details dialog (includes forced Nyx in Extraction System dropdown)
+  function openCallDetails(callId){
+    const c = getCall(callId);
+    if(!c) return;
+
+    const unitOptions = data.units.sort((a,b)=>a.name.localeCompare(b.name))
+      .map(u => `<option value="${escAttr(u.id)}">${esc(u.name)} â¢ ${esc(u.type)}${u.ship ? " (" + esc(u.ship) + ")" : ""} â¢ ${esc(u.status)}</option>`).join("") || `<option disabled>(No units)</option>`;
+
+    const peopleOptions = data.people.sort((a,b)=>a.handle.localeCompare(b.handle))
+      .map(p => `<option value="${escAttr(p.id)}">${esc(p.handle)} â¢ ${esc(p.tags||"")}</option>`).join("") || `<option disabled>(No people)</option>`;
+
+    const injurySelectHtml = (key, current) => `
+      <div class="field injField" style="margin-bottom:0">
+        <label>${esc(INJURY_PARTS.find(p=>p.key===key)?.label || key)}</label>
+        <select id="inj_${escAttr(key)}">
+          ${INJURY_LEVELS.map(v => `<option value="${v}" ${v===current?"selected":""}>${esc(INJURY_LABEL[v]||v)}</option>`).join("")}
+        </select>
+      </div>
+    `;
+
+    const preSys = (c.aar?.extractionSystem || c.system || "Stanton");
+    const stations = getStationsForSystem(preSys);
+    const preStation = (c.aar?.extractionStation || "");
+    const preCustom = (c.aar?.extractionCustom || "");
+    const stationOptions = stations.map(s => `<option value="${escAttr(s)}" ${s===preStation?"selected":""}>${esc(s)}</option>`).join("");
+
+    UI.dlgTitle.textContent = `Call ${c.id}`;
+    UI.dlgFoot.innerHTML = `
+      <button class="btn" id="dlgSaveAar">Save AAR Fields</button>
+      <button class="btn" id="dlgGenReport">Generate Report</button>
+      <button class="btn primary" id="dlgDone">Done</button>
+    `;
+    UI.dlgBackdrop.style.display = "flex";
+
+    UI.dlgBody.innerHTML = `
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div class="title">
+            <div class="main">${esc(c.type)} <span class="muted">â¢</span> ${esc(c.location)}</div>
+            <div class="sub">${esc(c.id)} â¢ ${fmtTime(c.createdAt)} â¢ by ADMIN â¢ system: ${esc(c.system||"")}</div>
+          </div>
+          <div>${badgePriority(c.priority)} ${badgeStatus(c.status)}</div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="mini">${esc(c.details || "(no details)")}</div>
+
+        <div class="hr"></div>
+
+        <div class="split">
+          <div class="card">
+            <div class="mini muted"><b>Units</b></div>
+            <div class="mini" id="dlgAssignedUnits" style="margin-top:6px"></div>
+
+            <div class="hr"></div>
+            <div class="row">
+              <div class="field" style="margin-bottom:0">
+                <label>Assign unit</label>
+                <select id="dlgUnitPick">${unitOptions}</select>
+              </div>
+            </div>
+            <div class="row" style="margin-top:6px">
+              <button class="btn primary" id="dlgAssignUnitBtn">Assign</button>
+              <button class="btn" id="dlgUnassignUnitBtn">Unassign</button>
+            </div>
+
+            <div class="hr"></div>
+            <div class="field" style="margin-bottom:0">
+              <label>Set call status</label>
+              <select id="dlgStatusPick">
+                ${["OPEN","DISPATCHED","EN_ROUTE","ON_SCENE","RTB","CLOSED"].map(s => `<option ${s===c.status?"selected":""}>${s}</option>`).join("")}
+              </select>
+            </div>
+            <div class="row" style="margin-top:6px">
+              <button class="btn" id="dlgSetStatusBtn">Apply Status</button>
+              <button class="btn danger" id="dlgCloseCallBtn">Close Call</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="mini muted"><b>People</b></div>
+            <div class="mini" id="dlgLinkedPeople" style="margin-top:6px"></div>
+
+            <div class="hr"></div>
+            <div class="row">
+              <div class="field" style="margin-bottom:0">
+                <label>Link person</label>
+                <select id="dlgPersonPick">${peopleOptions}</select>
+              </div>
+            </div>
+            <div class="row" style="margin-top:6px">
+              <button class="btn primary" id="dlgLinkPersonBtn">Link</button>
+              <button class="btn" id="dlgUnlinkPersonBtn">Unlink</button>
+            </div>
+
+            <div class="hr"></div>
+            <div class="field" style="margin-bottom:0">
+              <label>Add update</label>
+              <textarea id="dlgUpdateText" placeholder="Unit en route, threats, patient status, etc..."></textarea>
+            </div>
+            <div class="row" style="margin-top:6px">
+              <button class="btn primary" id="dlgAddUpdateBtn">Add Update</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="card">
+          <div class="mini muted"><b>AAR Fields (for the report)</b></div>
+          <div class="smallNote">Fill these out before generating the report (optional).</div>
+          <div class="hr"></div>
+
+<div class="field">
+            <label>Actions Taken</label>
+            <textarea id="aarActionsTaken">${esc(c.aar?.actionsTaken||"")}</textarea>
+          </div>
+
+
+
+          
+
+          
+
+          <div class="row">
+            <div class="field">
+              <label>Threats â PvE Count</label>
+              <select id="aarPveCount">
+                <option value="0" ${c.aar?.threatsPveCount == "0" ? "selected" : ""}>0</option>
+                <option value="1-5" ${c.aar?.threatsPveCount == "1-5" ? "selected" : ""}>1â5</option>
+                <option value="6-10" ${c.aar?.threatsPveCount == "6-10" ? "selected" : ""}>6â10</option>
+                <option value="11-20" ${c.aar?.threatsPveCount == "11-20" ? "selected" : ""}>11â20</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Threats â PvP Count</label>
+              <select id="aarPvpCount">
+<option value="0" ${c.aar?.threatsPvpCount=="0" ? "selected":""}>0</option>
+<option value="1" ${c.aar?.threatsPvpCount=="1" ? "selected":""}>1</option>
+<option value="2" ${c.aar?.threatsPvpCount=="2" ? "selected":""}>2</option>
+<option value="3" ${c.aar?.threatsPvpCount=="3" ? "selected":""}>3</option>
+<option value="4" ${c.aar?.threatsPvpCount=="4" ? "selected":""}>4</option>
+<option value="5" ${c.aar?.threatsPvpCount=="5" ? "selected":""}>5</option>
+<option value="6" ${c.aar?.threatsPvpCount=="6" ? "selected":""}>6</option>
+<option value="7" ${c.aar?.threatsPvpCount=="7" ? "selected":""}>7</option>
+<option value="8" ${c.aar?.threatsPvpCount=="8" ? "selected":""}>8</option>
+<option value="9" ${c.aar?.threatsPvpCount=="9" ? "selected":""}>9</option>
+<option value="10" ${c.aar?.threatsPvpCount=="10" ? "selected":""}>10</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Threats â PvE Notes</label>
+              <textarea id="aarPveNotes">${esc(c.aar?.threatsPveNotes||"")}</textarea>
+            </div>
+            <div class="field">
+              <label>Threats â PvP Notes</label>
+              <textarea id="aarPvpNotes">${esc(c.aar?.threatsPvpNotes||"")}</textarea>
+            </div>
+          </div>
+
+          
+
+          <div class="field">
+            <label>Medical â Injury Map (dropdowns)</label>
+            <div class="injWrap">
+              <div class="outline" aria-label="Person outline">
+                <svg class="sil" viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg">
+                  <g fill="none" stroke="rgba(147,164,199,.55)" stroke-width="2">
+                    <circle cx="70" cy="22" r="16"/>
+                    <path d="M55 42 Q70 52 85 42"/>
+                    <path d="M50 55 Q70 70 90 55"/>
+                    <path d="M60 55 L60 105 Q70 120 80 105 L80 55"/>
+                    <path d="M50 65 L28 95 Q24 100 28 104 Q34 108 40 102 L60 82"/>
+                    <path d="M90 82 L110 102 Q116 108 122 104 Q126 100 122 95 L100 65"/>
+                    <path d="M60 105 L50 155 Q48 166 58 168 Q66 170 68 160 L72 132"/>
+                    <path d="M80 105 L90 155 Q92 166 82 168 Q74 170 72 160 L68 132"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="injGrid">
+                ${injurySelectHtml("head", c.aar?.medInjuries?.head || "NONE")}
+                ${injurySelectHtml("chest", c.aar?.medInjuries?.chest || "NONE")}
+                ${injurySelectHtml("leftArm", c.aar?.medInjuries?.leftArm || "NONE")}
+                ${injurySelectHtml("rightArm", c.aar?.medInjuries?.rightArm || "NONE")}
+                ${injurySelectHtml("leftLeg", c.aar?.medInjuries?.leftLeg || "NONE")}
+                ${injurySelectHtml("rightLeg", c.aar?.medInjuries?.rightLeg || "NONE")}
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Medical Device Used</label>
+            <select id="aarMedicalDevice">
+              <option value="">None</option>
+              <option value="Medgun" ${c.aar?.medicalDevice==="Medgun" ? "selected" : ""}>Medgun</option>
+              <option value="Medpen" ${c.aar?.medicalDevice==="Medpen" ? "selected" : ""}>Medpen</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Extraction System</label>
+              <select id="aarExtractSystem">
+                ${SYSTEMS.map(s => `<option value="${escAttr(s)}" ${preSys===s?"selected":""}>${esc(s)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field">
+              <label>Extraction Station</label>
+              <select id="aarExtractStation">
+                <option value="">(none)</option>
+                ${stationOptions}
+                <option value="__CUSTOM__" ${preStation==="__CUSTOM__"?"selected":""}>(Custom)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field ${preStation==="__CUSTOM__" ? "" : "hidden"}" id="aarExtractCustomWrap">
+            <label>Custom Extraction Destination</label>
+            <input id="aarExtractCustom" value="${escAttr(preCustom)}" placeholder="Type destination (e.g., outpost, ship, cave, etc.)" />
+          </div>
+
+          <div class="field">
+            <label>Outcome</label>
+            <textarea id="aarOutcome">${esc(c.aar?.outcome||"")}</textarea>
+          </div>
+
+          <div class="field">
+            <label>RTB / Debrief</label>
+            <textarea id="aarRtbDebrief">${esc(c.aar?.rtbDebrief||"")}</textarea>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="mini muted"><b>Updates</b></div>
+        <div class="list" id="dlgUpdatesList" style="margin-top:8px"></div>
+      </div>
+    `;
+
+    const refreshUnits = () => {
+      const assigned = (c.assignedUnitIds||[]).map(id => getUnit(id)).filter(Boolean);
+      $("dlgAssignedUnits").innerHTML = assigned.length
+        ? assigned.map(u => `<span class="pill">${esc(u.name)} â¢ ${esc(u.type)}${u.ship ? " (" + esc(u.ship) + ")" : ""} â¢ ${esc(u.status)}</span>`).join("")
+        : `<span class="muted">None</span>`;
+    };
+
+    const refreshPeople = () => {
+      const linked = (c.linkedPeopleIds||[]).map(id => getPerson(id)).filter(Boolean);
+      $("dlgLinkedPeople").innerHTML = linked.length
+        ? linked.map(p => `<span class="pill">${esc(p.handle)} â¢ ${esc(p.tags||"")}</span>`).join("")
+        : `<span class="muted">None</span>`;
+    };
+
+    const refreshUpdates = () => {
+      const list = $("dlgUpdatesList");
+      const upd = (c.updates||[]).slice(0, 200);
+      list.innerHTML = upd.length ? upd.map(u => `
+        <div class="card">
+          <div class="mini"><span class="mono">${fmtTime(u.at)}</span> â <b>${esc(u.by)}</b></div>
+          <div class="mini muted" style="margin-top:6px">${esc(u.text)}</div>
+        </div>
+      `).join("") : `<div class="help">No updates yet.</div>`;
+    };
+
+    const wireExtractionDropdowns = () => {
+      const sysSel = $("aarExtractSystem");
+      const stSel = $("aarExtractStation");
+      const customWrap = $("aarExtractCustomWrap");
+      const customInput = $("aarExtractCustom");
+      if(!sysSel || !stSel) return;
+
+      const toggleCustom = () => {
+        if(!customWrap) return;
+        const isCustom = (stSel.value === "__CUSTOM__");
+        customWrap.classList.toggle("hidden", !isCustom);
+      };
+
+      const renderStations = () => {
+        const sys = sysSel.value;
+        const list = getStationsForSystem(sys);
+        const current = (c.aar?.extractionStation || "");
+        let html = `<option value="">(none)</option>`;
+        for(const s of list){
+          const sel = (s === current) ? "selected" : "";
+          html += `<option value="${escAttr(s)}" ${sel}>${esc(s)}</option>`;
+        }
+        const customSel = (current === "__CUSTOM__") ? "selected" : "";
+        html += `<option value="__CUSTOM__" ${customSel}>(Custom)</option>`;
+        stSel.innerHTML = html;
+
+        const inList = list.includes(current);
+        if(current && !inList && current !== "__CUSTOM__"){
+          stSel.value = "__CUSTOM__";
+          if(customInput && !customInput.value) customInput.value = current;
+        }
+        toggleCustom();
+      };
+
+      sysSel.addEventListener("change", () => {
+        c.aar.extractionSystem = sysSel.value;
+        c.aar.extractionStation = "";
+        c.aar.extractionCustom = "";
+        renderStations();
+      });
+
+      stSel.addEventListener("change", toggleCustom);
+
+      renderStations();
+    };
+
+    const saveAarFields = () => {
+      c.aar = c.aar || {};
+      c.aar.threatsPveCount = $("aarPveCount").value;
+      c.aar.threatsPveNotes = $("aarPveNotes").value.trim();
+      c.aar.threatsPvpCount = $("aarPvpCount").value;
+      c.aar.threatsPvpNotes = $("aarPvpNotes").value.trim();
+      c.aar.actionsTaken = $("aarActionsTaken").value.trim();
+
+      c.aar.medInjuries = c.aar.medInjuries || {};
+      for(const part of INJURY_PARTS){
+        const sel = $("inj_"+part.key);
+        const v = sel ? sel.value : "NONE";
+        c.aar.medInjuries[part.key] = INJURY_LEVELS.includes(v) ? v : "NONE";
+      }
+
+      c.aar.medicalDevice = $("aarMedicalDevice").value;
+
+      const exSys = $("aarExtractSystem")?.value || (c.system || "Stanton");
+      const exStation = $("aarExtractStation")?.value || "";
+      const exCustom = $("aarExtractCustom")?.value?.trim() || "";
+
+      c.aar.extractionSystem = exSys;
+      c.aar.extractionStation = exStation;
+      c.aar.extractionCustom = exCustom;
+
+      c.aar.outcome = $("aarOutcome").value.trim();
+      c.aar.rtbDebrief = $("aarRtbDebrief").value.trim();
+
+      addLog(`Saved AAR fields â ${c.id}`);
+      persist();
+    };
+
+    // Wire buttons
+    refreshUnits(); refreshPeople(); refreshUpdates();
+    wireExtractionDropdowns();
+
+    $("dlgAssignUnitBtn").addEventListener("click", () => {
+      const uid = $("dlgUnitPick").value;
+      if(!uid) return toast("Pick a unit.");
+      assignUnitToCall(c.id, uid);
+      toast("Unit assigned.");
+      persist(); renderAll(); closeDialog(); openCallDetails(c.id);
+    });
+
+    $("dlgUnassignUnitBtn").addEventListener("click", () => {
+      const uid = $("dlgUnitPick").value;
+      if(!uid) return toast("Pick a unit.");
+      unassignUnitFromCall(c.id, uid);
+      toast("Unit unassigned.");
+      persist(); renderAll(); closeDialog(); openCallDetails(c.id);
+    });
+
+    $("dlgSetStatusBtn").addEventListener("click", () => {
+      setCallStatus(c.id, $("dlgStatusPick").value);
+      toast("Status updated.");
+      persist(); renderAll(); closeDialog(); openCallDetails(c.id);
+    });
+
+    $("dlgCloseCallBtn").addEventListener("click", () => {
+      if(!confirm("Close this call and release assigned units?")) return;
+      setCallStatus(c.id, "CLOSED");
+      toast("Call closed.");
+      persist(); renderAll(); closeDialog();
+    });
+
+    $("dlgLinkPersonBtn").addEventListener("click", () => {
+      const pid = $("dlgPersonPick").value;
+      if(!pid) return toast("Pick a person.");
+      if(!c.linkedPeopleIds.includes(pid)) c.linkedPeopleIds.push(pid);
+      c.updates.unshift({ at: Date.now(), by: session.username, text: `Linked person ${getPerson(pid)?.handle || pid}.` });
+      addLog(`Linked person â ${c.id}`);
+      persist();
+      toast("Person linked.");
+      renderAll(); closeDialog(); openCallDetails(c.id);
+    });
+
+    $("dlgUnlinkPersonBtn").addEventListener("click", () => {
+      const pid = $("dlgPersonPick").value;
+      if(!pid) return toast("Pick a person.");
+      c.linkedPeopleIds = c.linkedPeopleIds.filter(x => x !== pid);
+      c.updates.unshift({ at: Date.now(), by: session.username, text: `Unlinked person ${getPerson(pid)?.handle || pid}.` });
+      addLog(`Unlinked person â ${c.id}`);
+      persist();
+      toast("Person unlinked.");
+      renderAll(); closeDialog(); openCallDetails(c.id);
+    });
+
+    $("dlgAddUpdateBtn").addEventListener("click", () => {
+      const text = $("dlgUpdateText").value.trim();
+      if(!text) return toast("Enter an update.");
+      c.updates.unshift({ at: Date.now(), by: session.username, text });
+      addLog(`Update added â ${c.id}`);
+      persist();
+      toast("Update added.");
+      renderAll(); closeDialog(); openCallDetails(c.id);
+    });
+
+    $("dlgSaveAar").addEventListener("click", () => { saveAarFields(); toast("AAR fields saved."); });
+    $("dlgGenReport").addEventListener("click", () => { saveAarFields(); openReportDialog(c.id); });
+    $("dlgDone").addEventListener("click", () => { saveAarFields(); closeDialog(); });
+  }
+
+  function openReportDialog(callId){
+    const c = getCall(callId);
+    if(!c) return;
+    const report = generateAfterActionReport(c);
+
+    UI.dlgTitle.textContent = `After Action Report â ${c.id}`;
+    UI.dlgBody.innerHTML = `
+      <div class="card">
+        <div class="help">Generated from call + AAR + units + people + updates.</div>
+        <div class="hr"></div>
+        <textarea class="reportBox" id="reportText">${esc(report)}</textarea>
+      </div>
+    `;
+    UI.dlgFoot.innerHTML = `
+      <button class="btn" id="btnCopyReport">Copy</button>
+      <button class="btn" id="btnDownloadReport">Download .txt</button>
+      <button class="btn primary" id="btnBackToCall">Back to Call</button>
+    `;
+    UI.dlgBackdrop.style.display = "flex";
+
+    $("btnCopyReport").addEventListener("click", async () => {
+      try{ await navigator.clipboard.writeText(report); toast("Report copied."); }
+      catch{ toast("Copy failed. Select text and copy manually."); }
+    });
+
+    $("btnDownloadReport").addEventListener("click", () => {
+      download(`${c.id}_after_action_report.txt`, report, "text/plain");
+      toast("Downloaded.");
+    });
+
+    $("btnBackToCall").addEventListener("click", () => { closeDialog(); openCallDetails(c.id); });
+  }
+
+  function generateAfterActionReport(c){
+    const au = (c.assignedUnitIds||[]).map(id => getUnit(id)).filter(Boolean);
+    const ap = (c.linkedPeopleIds||[]).map(id => getPerson(id)).filter(Boolean);
+
+    const assignedUnits = au.map(u => `${u.name} (${u.ship?`${u.ship} - `:""}${u.type}) â ${u.status}${u.notes?` â ${u.notes}`:""}`);
+    const linkedPeople = ap.map(p => `${p.handle}${p.org?` (${p.org})`:""}${p.tags?` [${p.tags}]`:""}`);
+
+    const updates = (c.updates||[]).slice().sort((a,b)=>a.at-b.at)
+      .map(u => `- ${fmtTime(u.at)} â ${u.by}: ${u.text}`);
+
+    const aar = c.aar || {};
+    const pveCount = (aar.threatsPveCount || "0");
+    const pvpCount = (aar.threatsPvpCount || "0");
+
+    const injurySummary = formatInjurySummary(aar.medInjuries || {});
+
+    const exSys = (aar.extractionSystem || c.system || "Stanton");
+    const exStation = (aar.extractionStation || "");
+    const exCustom = (aar.extractionCustom || "");
+    const extractionLine =
+      exStation === "__CUSTOM__"
+        ? (exCustom ? `${exSys} â ${exCustom}` : `${exSys} â (custom destination not specified)`)
+        : (exStation ? `${exSys} â ${exStation}` : "(none)");
+
+    const lines = [];
+    lines.push("MEDRUNNER / SECURITY â AFTER ACTION REPORT");
+    lines.push("=".repeat(68));
+    lines.push(`CALL ID:        ${c.id}`);
+    lines.push(`TYPE:           ${c.type}`);
+    lines.push(`PRIORITY:       ${c.priority}`);
+    lines.push(`STATUS:         ${c.status}`);
+    lines.push(`SYSTEM:         ${c.system || ""}`);
+    lines.push(`LOCATION:       ${c.location}`);
+    lines.push(`DISPATCH TIME:  ${fmtTime(c.createdAt)}`);
+    lines.push(`DISPATCHER:     ADMIN`);
+lines.push("");
+    lines.push("**DISPATCH INFO**");
+    lines.push(blankOrWrap(c.details, 68));
+lines.push("");
+    lines.push("**THREATS**");
+    lines.push(`PvE Threats: ${pveCount}`);
+    lines.push(blankOrWrap(aar.threatsPveNotes, 68, true));
+    lines.push("");
+    lines.push(`PvP Threats: ${pvpCount}`);
+    lines.push(blankOrWrap(aar.threatsPvpNotes, 68, true));
+lines.push("");
+    lines.push("**ACTIONS TAKEN**");
+    lines.push(blankOrWrap(aar.actionsTaken, 68));
+lines.push("");
+    lines.push("**MEDICAL**");
+    lines.push(injurySummary ? injurySummary : "(none)");
+    if(aar.medicalDevice){
+      lines.push("");
+      lines.push(`Device Used: ${aar.medicalDevice}`);
+    }
+lines.push("");
+    lines.push("**EXTRACTION / TRANSPORT**");
+    lines.push(extractionLine);
+lines.push("");
+    lines.push("**OUTCOME**");
+    lines.push(blankOrWrap(aar.outcome, 68));
+lines.push("");
+    lines.push("**RTB / DEBRIEF**");
+    lines.push(blankOrWrap(aar.rtbDebrief, 68));
+lines.push("");
+    lines.push("**UNITS ASSIGNED**");
+    lines.push(assignedUnits.length ? assignedUnits.map(x => `- ${x}`).join("\n") : "(none)");
+lines.push("");
+    lines.push("**PERSONS INVOLVED**");
+    lines.push(linkedPeople.length ? linkedPeople.map(x => `- ${x}`).join("\n") : "(none)");
+lines.push("");
+    lines.push("**TIMELINE / UPDATES**");
+    lines.push(updates.length ? updates.join("\n") : "(no updates)");
+
+    lines.push("=".repeat(68));
+    lines.push("END REPORT");
+    return lines.join("\n");
+  }
+
+  function formatInjurySummary(medInjuries){
+    const parts = [];
+    for(const p of INJURY_PARTS){
+      const v = medInjuries?.[p.key] || "NONE";
+      if(v && v !== "NONE"){
+        parts.push(`${p.label}: ${INJURY_LABEL[v] || v}`);
+      }
+    }
+    if(!parts.length) return "";
+    return parts.map(x => `- ${x}`).join("\n");
+  }
+
+  function blankOrWrap(text, width, indentIfBlank=false){
+    const t = String(text||"").trim();
+    if(!t) return indentIfBlank ? "  (none)" : "(none)";
+    return wrapText(t, width);
+  }
+
+  function wrapText(text, width){
+    const words = String(text).replace(/\s+/g," ").trim().split(" ");
+    const out = [];
+    let line = "";
+    for(const w of words){
+      const next = line ? (line + " " + w) : w;
+      if(next.length > width){
+        if(line) out.push(line);
+        line = w;
+      } else line = next;
+    }
+    if(line) out.push(line);
+    return out.join("\n");
+  }
+
+  function clampInt(v){
+    const n = parseInt(v,10);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  }
+
+  function assignUnitToCall(callId, unitId){
+    const c = getCall(callId), u = getUnit(unitId);
+    if(!c || !u) return;
+
+    c.assignedUnitIds ??= [];
+    if(!c.assignedUnitIds.includes(u.id)) c.assignedUnitIds.push(u.id);
+
+    u.status = "ASSIGNED";
+    if(c.status === "OPEN") c.status = "DISPATCHED";
+
+    c.updates ??= [];
+    c.updates.unshift({ at: Date.now(), by: session.username, text: `Unit ${u.name} assigned.` });
+    addLog(`Assigned ${u.name} â ${c.id}`);
+    persist();
+  }
+
+  function unassignUnitFromCall(callId, unitId){
+    const c = getCall(callId), u = getUnit(unitId);
+    if(!c || !u) return;
+
+    c.assignedUnitIds = (c.assignedUnitIds||[]).filter(id => id !== u.id);
+    const still = data.calls.some(x => x.status !== "CLOSED" && (x.assignedUnitIds||[]).includes(u.id));
+    if(!still) u.status = "AVAILABLE";
+
+    c.updates ??= [];
+    c.updates.unshift({ at: Date.now(), by: session.username, text: `Unit ${u.name} unassigned.` });
+    addLog(`Unassigned ${u.name} from ${c.id}`);
+    persist();
+  }
+
+  function setCallStatus(callId, status){
+    const c = getCall(callId);
+    if(!c) return;
+    c.status = status;
+
+    c.updates ??= [];
+    c.updates.unshift({ at: Date.now(), by: session.username, text: `Status set to ${status}.` });
+    addLog(`Set ${c.id} status â ${status}`);
+
+    if(status === "CLOSED"){
+      for(const uid of (c.assignedUnitIds||[])){
+        const u = getUnit(uid);
+        if(!u) continue;
+        const still = data.calls.some(x => x.id !== c.id && x.status !== "CLOSED" && (x.assignedUnitIds||[]).includes(u.id));
+        if(!still) u.status = "AVAILABLE";
+      }
+    }
+    persist();
+  }
+
+  // â Console System dropdown: forced SYSTEMS (includes Nyx)
+  function buildLocationDropdowns(){
+    const sys = $("sysSelect"), loc = $("locSelect");
+    if(!sys || !loc) return;
+
+    sys.innerHTML = SYSTEMS.map(s => `<option value="${escAttr(s)}">${esc(s)}</option>`).join("");
+
+    const fill = () => {
+      const groups = SC_LOCATIONS[sys.value] || {};
+      let html = "";
+      Object.keys(groups).forEach(g => {
+        html += `<optgroup label="${esc(g)}">`;
+        groups[g].forEach(item => html += `<option value="${esc(item)}">${esc(item)}</option>`);
+        html += `</optgroup>`;
+      });
+      html += `<optgroup label="Other"><option value="(Custom / Not Listed)">(Custom / Not Listed)</option></optgroup>`;
+      loc.innerHTML = html;
+    };
+    sys.addEventListener("change", fill);
+    fill();
+  }
+
+  function callCard(c){
+    const units = (c.assignedUnitIds||[]).map(id => getUnit(id)?.name).filter(Boolean).join(", ") || "None";
+    const people = (c.linkedPeopleIds||[]).map(id => getPerson(id)?.handle).filter(Boolean).join(", ") || "None";
+    return `
+      <div class="card" id="openCall_${escAttr(c.id)}" style="cursor:pointer">
+        <div class="title">
+          <div class="main">${esc(c.type)} <span class="muted">â¢</span> ${esc(c.location)}</div>
+          <div class="sub">${esc(c.id)} â¢ ${fmtTime(c.createdAt)} â¢ by ADMIN â¢ ${esc(c.system||"")}</div>
+        </div>
+        <div class="hr"></div>
+        <div class="row" style="justify-content:space-between">
+          <div class="mini"><b>Units:</b> <span class="muted">${esc(units)}</span></div>
+          <div class="mini">${badgePriority(c.priority)} ${badgeStatus(c.status)}</div>
+        </div>
+        <div class="mini" style="margin-top:6px"><b>People:</b> <span class="muted">${esc(people)}</span></div>
+        <div class="hr"></div>
+        <div class="mini muted">${esc((c.details||"(no details)").slice(0,220))}${(c.details||"").length>220?"â¦":""}</div>
+      </div>`;
+  }
+
+  function unitCard(u){
+    return `
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div class="title"><div class="main">${esc(u.name)}</div><div class="sub">${esc(u.type)}${u.ship ? " (" + esc(u.ship) + ")" : ""} â¢ ${esc(u.id)}</div></div>
+          <div>${badgeUnit(u.status)}</div>
+        </div>
+        <div class="hr"></div>
+        <div class="mini muted">${esc(u.notes||"")}</div>
+      </div>`;
+  }
+
+  function personCard(p){
+    return `
+      <div class="card">
+        <div class="title"><div class="main">${esc(p.handle)}</div><div class="sub">${esc(p.org||"")} â¢ ${esc(p.tags||"")} â¢ ${esc(p.id)}</div></div>
+        <div class="hr"></div>
+        <div class="mini muted"><b>Last note:</b> ${esc(p.notes?.[0]?.text || "(none)")}</div>
+      </div>`;
+  }
+
+  function badgePriority(p){
+    if(p==="CRITICAL") return `<span class="badge bad">P:${esc(p)}</span>`;
+    if(p==="HIGH") return `<span class="badge warn">P:${esc(p)}</span>`;
+    return `<span class="badge">P:${esc(p)}</span>`;
+  }
+  function badgeStatus(s){
+    if(s==="OPEN") return `<span class="badge warn">${esc(s)}</span>`;
+    if(s==="DISPATCHED"||s==="ON_SCENE") return `<span class="badge good">${esc(s)}</span>`;
+    if(s==="CLOSED") return `<span class="badge">${esc(s)}</span>`;
+    return `<span class="badge">${esc(s)}</span>`;
+  }
+  function badgeUnit(s){
+    if(s==="AVAILABLE") return `<span class="badge good">${esc(s)}</span>`;
+    if(s==="OUT_OF_SERVICE") return `<span class="badge bad">${esc(s)}</span>`;
+    if(s==="ON_SCENE") return `<span class="badge good">${esc(s)}</span>`;
+    return `<span class="badge warn">${esc(s)}</span>`;
+  }
+
+  function newId(prefix){ data.nextId = (data.nextId || 1000) + 1; return `${prefix}-${data.nextId}`; }
+  function getCall(id){ return data.calls.find(c=>c.id===id) || null; }
+  function getUnit(id){ return data.units.find(u=>u.id===id) || null; }
+  function getPerson(id){ return data.people.find(p=>p.id===id) || null; }
+
+  function addLog(action){
+    data.log.unshift({ at: Date.now(), by: "ADMIN", action });
+    data.log = data.log.slice(0, 200);
+  }
+
+  function notesText(p){ return (p.notes||[]).map(n=>n.text).join(" "); }
+
+  function callBlob(c){
+    const units = (c.assignedUnitIds||[]).map(id => getUnit(id)?.name || "").join(" ");
+    const ppl = (c.linkedPeopleIds||[]).map(id => getPerson(id)?.handle || "").join(" ");
+    const aar = c.aar || {};
+    return `${c.id} ${c.status} ${c.type} ${c.priority} ${c.system||""} ${c.location} ${c.details||""} ${units} ${ppl} ${aar.commandSummary||""} ${aar.outcome||""}`.toLowerCase();
+  }
+
+  function seedSample(){
+    if(data.units.length === 0){
+      data.units.push(
+        { id:newId("U"), name:"S1", type:"PATROL", status:"AVAILABLE", notes:"Stanton 1 â¢ multi-role" },
+        { id:newId("U"), name:"MED-1", type:"MEDICAL", status:"AVAILABLE", notes:"Cutlass Red / Terrapin med bed" }
+      );
+      addLog("Seeded sample units");
+    }
+    if(data.people.length === 0){
+      data.people.push(
+        { id:newId("P"), handle:"Umbreeeon", org:"Medrunner / Security", tags:"pilot, lead", notes:[] },
+        { id:newId("P"), handle:"Unknown Victim", org:"Civilian", tags:"victim", notes:[] }
+      );
+      addLog("Seeded sample people");
+    }
+    const c1 = {
+      id: newId("C"),
+      createdAt: Date.now(),
+      createdBy: "ADMIN",
+      status: "OPEN",
+      system: "Nyx",
+      type: "Medical Emergency",
+      priority: "HIGH",
+      location: "Levski (Delamar)",
+      details: "Unconscious client near hab access. Possible hypoxia, unknown contacts in tunnels.",
+      assignedUnitIds: [],
+      linkedPeopleIds: [],
+      updates: [{ at: Date.now(), by: "SYSTEM", text: "Call created (sample)." }],
+      aar: {
+        commandSummary:"",
+        aoNotes:"Levski interior, low visibility, multiple access routes.",
+        threatsPveCount:0,
+        threatsPveNotes:"",
+        threatsPvpCount:0,
+        threatsPvpNotes:"",
+        actionsTaken:"",
+        medicalDevice:"Medpen",
+        medInjuries:{ head:"NONE", chest:"TIER_1", leftArm:"NONE", rightArm:"NONE", leftLeg:"NONE", rightLeg:"NONE" },
+        extractionSystem:"Nyx",
+        extractionStation:"Levski (Delamar)",
+        extractionCustom:"",
+        outcome:"Client stabilized and moved to clinic.",
+        rtbDebrief:"RTB without further contact."
+      }
+    };
+    data.calls.push(c1);
+    addLog("Seeded sample call");
+  }
+
+  function download(filename, text, mime){
+    const blob = new Blob([text], {type:mime});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function importJSON(){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+    input.onchange = async () => {
+      const f = input.files?.[0];
+      if(!f) return;
+      try{
+        const parsed = JSON.parse(await f.text());
+        if(!parsed || !parsed.calls || !parsed.units || !parsed.people || !parsed.log){
+          toast("Invalid CAD JSON."); return;
+        }
+        data = parsed; normalizeData();
+        addLog("Imported JSON (replaced data)");
+        persist(); renderAll(); toast("Imported.");
+      }catch{ toast("Import failed."); }
+    };
+    input.click();
+  }
+
+  let toastTimer = null;
+  function toast(msg){
+    UI.toast.textContent = msg;
+    UI.toast.style.display = "block";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> UI.toast.style.display="none", 2200);
+  }
+  function fmtTime(ts){
+    // Discord "Hammertime" full timestamp (exact date + time)
+    try{
+      const unix = Math.floor(Number(ts) / 1000);
+      return `<t:${unix}:F>`;
+    } catch(e){
+      return "(invalid time)";
+    }
+  }
+
+  function loadJSON(key, fallback){
+    try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch{ return fallback; }
+  }
+  function saveJSON(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} }
+  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+
+  // --- Star Citizen Ship List (Static, Offline) ---
+
+  // --- Auto Unit Type based on Ship (MEDICAL / CAP / Gunship) ---
+  function autoUnitTypeForShip(shipName){
+    const name = String(shipName||"").trim();
+    if(!name) return null;
+    const n = name.toLowerCase();
+
+    // MEDICAL
+    if(n.includes("c8r") || n.includes("cutlass red") || n.includes("red") || n.includes("med")){
+      return "MEDICAL";
+    }
+
+    // CAP (fighters / interceptors)
+    const cap = [
+      "gladius","arrow","hornet","super hornet","sabre","vanguard","hawk","blade","buccaneer",
+      "ares","inferno","ion","defender","scorpius","hurricane","fury","mantis","khartu","talon"
+    ];
+    if(cap.some(k => n.includes(k))) return "CAP";
+
+    // Gunship (heavy combat / support)
+    const gunship = [
+      "a2","hammerhead","redeemer","retaliator","valkyrie","perseus","polaris","idris","javelin","kraken",
+      "constellation","andromeda","corsair","starfarer","cutlass steel","m2"
+    ];
+    if(gunship.some(k => n.includes(k))) return "Gunship";
+
+    return null;
+  }
+
+  function applyShipAutoset(){
+    const shipInput = document.getElementById("uShip");
+    const typeSel = document.getElementById("uType");
+    const hint = document.getElementById("shipHint");
+    if(!shipInput || !typeSel) return;
+
+    const t = autoUnitTypeForShip(shipInput.value);
+    if(t){
+      typeSel.value = t;
+      if(hint) hint.textContent = `Auto Unit Type: ${t}`;
+    } else {
+      if(hint) hint.textContent = "Pick a ship to auto-set Unit Type (MEDICAL / CAP / Gunship).";
+    }
+  }
+
+  // --- Star Citizen Ship List (Static, Offline) ---
+  // Searchable ship picker + category + suggested unit type + crew/role hints.
+    const SC_SHIPS = [
+    "100i",
+    "125a",
+    "135c",
+    "300i",
+    "315p",
+    "325a",
+    "350r",
+    "400i",
+    "600i Executive Edition",
+    "600i Explorer",
+    "600i Touring",
+    "85X",
+    "890 Jump",
+    "A1 Spirit",
+    "A2 Hercules Starlifter",
+    "Apollo Medivac",
+    "Apollo Triage",
+    "Ares Inferno",
+    "Ares Ion",
+    "Arrastra",
+    "Arrow",
+    "Aurora CL",
+    "Aurora ES",
+    "Aurora LN",
+    "Aurora LX",
+    "Aurora MR",
+    "Avenger Stalker",
+    "Avenger Titan",
+    "Avenger Titan Renegade",
+    "Avenger Warlock",
+    "Ballista",
+    "Ballista Dunestalker",
+    "Ballista Snowblind",
+    "Bengal",
+    "Blade",
+    "Buccaneer",
+    "C1 Spirit",
+    "C2 Hercules Starlifter",
+    "C8 Pisces",
+    "C8R Pisces Rescue",
+    "C8X Pisces Expedition",
+    "Carrack",
+    "Carrack Expedition",
+    "Caterpillar",
+    "Caterpillar Best In Show",
+    "Caterpillar Pirate Edition",
+    "Centurion",
+    "Constellation Andromeda",
+    "Constellation Aquila",
+    "Constellation Phoenix",
+    "Constellation Phoenix Emerald",
+    "Constellation Taurus",
+    "Corsair",
+    "Crucible",
+    "Cutlass Black",
+    "Cutlass Blue",
+    "Cutlass Red",
+    "Cutlass Steel",
+    "Cutter",
+    "Cutter Rambler",
+    "Cutter Scout",
+    "Cyclone",
+    "Cyclone AA",
+    "Cyclone MT",
+    "Cyclone RC",
+    "Cyclone RN",
+    "Cyclone TR",
+    "Defender",
+    "Dragonfly",
+    "Dragonfly Star Kitten",
+    "Dragonfly Yellowjacket",
+    "E1 Spirit",
+    "Eclipse",
+    "Endeavor",
+    "Expanse",
+    "F7A Hornet Mk I",
+    "F7A Hornet Mk II",
+    "F8 Lightning",
+    "F8A Lightning",
+    "F8C Lightning",
+    "Freelancer",
+    "Freelancer DUR",
+    "Freelancer MAX",
+    "Freelancer MIS",
+    "Fury",
+    "Fury LX",
+    "Fury MX",
+    "Genesis Starliner",
+    "Gladiator",
+    "Gladius",
+    "Gladius Pirate",
+    "Gladius Valiant",
+    "Glaive",
+    "Golem",
+    "Golem OX",
+    "Hammerhead",
+    "Hawk",
+    "Heartseeker",
+    "Herald",
+    "Hornet F7C Mk I",
+    "Hornet F7C Mk II",
+    "Hornet Ghost",
+    "Hornet Tracker",
+    "HoverQuad",
+    "Hull A",
+    "Hull B",
+    "Hull C",
+    "Hull D",
+    "Hull E",
+    "Hurricane",
+    "Idris-M",
+    "Idris-P",
+    "Intrepid",
+    "Ironclad",
+    "Ironclad Assault",
+    "Javelin",
+    "Khartu-al",
+    "Kraken",
+    "Kraken Privateer",
+    "Kuail Kal'tu",
+    "Legionnaire",
+    "Lynx",
+    "M2 Hercules Starlifter",
+    "M50",
+    "Mantis",
+    "Merchantman",
+    "Mercury Star Runner",
+    "MOLE",
+    "MPUV Cargo",
+    "MPUV Personnel",
+    "MPUV Tractor",
+    "Mule",
+    "Mustang Alpha",
+    "Mustang Beta",
+    "Mustang Delta",
+    "Mustang Gamma",
+    "Mustang Omega",
+    "Nautilus",
+    "Nomad",
+    "Nova Tank",
+    "Nox",
+    "Nox Kue",
+    "Odyssey",
+    "Origin 100i",
+    "Origin 125a",
+    "Origin 135c",
+    "Orion",
+    "Perseus",
+    "Pioneer",
+    "Pisces C8",
+    "Pisces C8R Rescue",
+    "Pisces C8X",
+    "Polaris",
+    "Prospector",
+    "Prowler",
+    "PTV",
+    "Pulse",
+    "Pulse LX",
+    "RAFT",
+    "Railen",
+    "Razor",
+    "Razor EX",
+    "Razor LX",
+    "Reclaimer",
+    "Reclaimer Best In Show",
+    "Redeemer",
+    "Reliant Kore",
+    "Reliant Mako",
+    "Reliant Sen",
+    "Reliant Tana",
+    "Retaliator",
+    "Retaliator Bomber",
+    "ROC",
+    "ROC-DS",
+    "Sabre",
+    "Sabre Comet",
+    "Sabre Raven",
+    "San'tok.yÄi",
+    "Scorpius",
+    "Scorpius Antares",
+    "Scythe",
+    "Spartan",
+    "SRV",
+    "Starfarer",
+    "Starfarer Gemini",
+    "Starlancer BLD",
+    "Starlancer MAX",
+    "Starlancer TAC",
+    "Starliner Genesis",
+    "Storm",
+    "Storm AA",
+    "STV",
+    "Super Hornet F7C-M Mk I",
+    "Super Hornet F7C-M Mk II",
+    "Syulen",
+    "Talon",
+    "Talon Shrike",
+    "Terrapin",
+    "Terrapin Medic",
+    "Ursa Rover",
+    "Ursa Rover Fortuna",
+    "Valkyrie",
+    "Valkyrie Liberator",
+    "Vanguard Harbinger",
+    "Vanguard Hoplite",
+    "Vanguard Sentinel",
+    "Vanguard Warden",
+    "Vulcan",
+    "Vulture",
+    "X1",
+    "X1 Force",
+    "X1 Velocity",
+    "Xi'an Khartu-al",
+    "Zeus Mk II CL",
+    "Zeus Mk II ES",
+    "Zeus Mk II MR",
+    "Zeus Mk II ST"
+  ];
+
+  // Categories: MEDICAL, COMBAT, TRANSPORT, INDUSTRIAL, EXPLORATION, SUPPORT, MULTIROLE
+  const SC_SHIP_META = {
+    "C8R Pisces": { cat:"MEDICAL", unitType:"MEDICAL", crew:"1â2", roles:"Rapid response / basic med support" },
+    "Cutlass Red": { cat:"MEDICAL", unitType:"MEDICAL", crew:"1â3", roles:"Field extraction / med transport" },
+
+    "Carrack": { cat:"EXPLORATION", unitType:"SAR", crew:"3â6+", roles:"Long-range SAR / med bay support" },
+    "Terrapin": { cat:"EXPLORATION", unitType:"INVESTIGATION", crew:"1â2", roles:"Recon / scanning / overwatch" },
+
+    "Mercury Star Runner": { cat:"TRANSPORT", unitType:"ESCORT", crew:"1â3", roles:"Fast transport / evac escort" },
+    "C2 Hercules": { cat:"TRANSPORT", unitType:"ESCORT", crew:"1â3", roles:"Heavy lift / vehicle transport" },
+    "M2 Hercules": { cat:"TRANSPORT", unitType:"TACTICAL", crew:"1â3", roles:"Armed transport / convoy support" },
+    "A2 Hercules": { cat:"COMBAT", unitType:"TACTICAL", crew:"2â6", roles:"Gunship / heavy strike" },
+    "Caterpillar": { cat:"TRANSPORT", unitType:"ESCORT", crew:"2â4", roles:"Cargo / staging / mobile base" },
+
+    "Reclaimer": { cat:"INDUSTRIAL", unitType:"SUPPORT", crew:"3â6+", roles:"Salvage platform / recovery ops" },
+    "Vulture": { cat:"INDUSTRIAL", unitType:"SUPPORT", crew:"1â2", roles:"Salvage / recovery support" },
+    "Prospector": { cat:"INDUSTRIAL", unitType:"SUPPORT", crew:"1", roles:"Mining / logistics support" },
+    "Mole": { cat:"INDUSTRIAL", unitType:"SUPPORT", crew:"2â4", roles:"Mining team platform" },
+    "SRV": { cat:"SUPPORT", unitType:"SUPPORT", crew:"1â2", roles:"Towing / recovery / tractor ops" },
+
+    "Gladius": { cat:"COMBAT", unitType:"INTERCEPTOR", crew:"1", roles:"Air superiority / intercept" },
+    "Arrow": { cat:"COMBAT", unitType:"INTERCEPTOR", crew:"1", roles:"Light intercept / screen" },
+    "Vanguard Warden": { cat:"COMBAT", unitType:"INTERCEPTOR", crew:"1â2", roles:"Long-range fighter / escort" },
+    "Hawk": { cat:"COMBAT", unitType:"INTERCEPTOR", crew:"1", roles:"Bounty capture / quick response" },
+    "Buccaneer": { cat:"COMBAT", unitType:"INTERCEPTOR", crew:"1", roles:"Aggressive light fighter" },
+    "Sabre": { cat:"COMBAT", unitType:"INTERCEPTOR", crew:"1", roles:"Stealth fighter / escort" },
+    "Eclipse": { cat:"COMBAT", unitType:"TACTICAL", crew:"1", roles:"Stealth torpedo / ambush" }
+  };
+
+  const SC_CAT_LABEL = {
+    MEDICAL:"Medical", COMBAT:"Combat", TRANSPORT:"Transport", INDUSTRIAL:"Industrial",
+    EXPLORATION:"Exploration", SUPPORT:"Support", MULTIROLE:"Multirole"
+  };
+
+  function loadStarCitizenShips(){
+    const dl = document.getElementById("scShipList");
+    if(!dl) return;
+    const list = SC_SHIPS.slice().sort((a,b)=>a.localeCompare(b));
+    dl.innerHTML = list.map(n => `<option value="${escAttr(n)}"></option>`).join("");
+  }
+
+  function guessShipMeta(shipName){
+    const name = String(shipName||"").trim();
+    if(!name) return null;
+    if(SC_SHIP_META[name]) return { name, guessed:false, ...SC_SHIP_META[name] };
+    const n = name.toLowerCase();
+    if(n.includes("red") || n.includes("c8r")) return { name, cat:"MEDICAL", unitType:"MEDICAL", crew:"?", roles:"Medical / extraction", guessed:true };
+    if(n.includes("med")) return { name, cat:"MEDICAL", unitType:"MEDICAL", crew:"?", roles:"Medical support", guessed:true };
+    if(n.includes("hull") || n.includes("caterpillar") || n.includes("hercules") || n.includes("freelancer")) return { name, cat:"TRANSPORT", unitType:"ESCORT", crew:"?", roles:"Transport / logistics", guessed:true };
+    if(n.includes("prospector") || n.includes("mole") || n.includes("reclaimer") || n.includes("vulture")) return { name, cat:"INDUSTRIAL", unitType:"SUPPORT", crew:"?", roles:"Industrial / recovery", guessed:true };
+    if(n.includes("carrack") || n.includes("terrapin") || n.includes("600i") || n.includes("zeus")) return { name, cat:"EXPLORATION", unitType:"SAR", crew:"?", roles:"Exploration / SAR", guessed:true };
+    if(n.includes("gladius") || n.includes("arrow") || n.includes("hornet") || n.includes("sab") || n.includes("vanguard") || n.includes("hawk") || n.includes("blade")) return { name, cat:"COMBAT", unitType:"INTERCEPTOR", crew:"1â2", roles:"Escort / intercept", guessed:true };
+    return { name, cat:"MULTIROLE", unitType:"PATROL", crew:"?", roles:"General purpose", guessed:true };
+  }
+
+  function applyShipAutofill(){
+    const shipInput = document.getElementById("uShip");
+    const typeSel = document.getElementById("uType");
+    const hint = document.getElementById("shipHint");
+    if(!shipInput || !typeSel || !hint) return;
+
+    const meta = guessShipMeta(shipInput.value);
+    if(!meta){
+      hint.textContent = "Pick a ship to see category, suggested unit type, and crew/role hints.";
+      return;
+    }
+
+    // Autofill unit type if still default PATROL
+    if(typeSel.value === "PATROL" || !typeSel.value){
+      typeSel.value = meta.unitType;
+    }
+
+    const catLabel = SC_CAT_LABEL[meta.cat] || meta.cat;
+    hint.textContent = `${catLabel} â¢ Suggested Unit Type: ${meta.unitType} â¢ Crew: ${meta.crew} â¢ Roles: ${meta.roles}${meta.guessed ? " (auto)" : ""}`;
+  }
+});
+</script>
+</body>
+</html>
